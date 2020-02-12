@@ -20,5 +20,8 @@ table = [
 ];
 
 bits = char("00" + join(table(char(message) + 1), "00") + "00")' - 48;
+% The final char("0010011100...00") - 48 is a very hacky way of converting
+% to a list of bits. (char converts to a list of 48 and 49, the ascii
+% results of 0 and 1). They then do minus 48.
 
 end
