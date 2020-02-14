@@ -6,12 +6,12 @@ close all
 % baseband modeling parameters
 use_fec = false; % enable/disable forward error correction
 bt = 0.5; % gaussian filter bandwidth
-snr = 40; % signal to noise ratio
+snr = 15; % signal to noise ratio
 osr = 64; % oversampling ratio
 
 % RF modeling parameters
 use_rf = true; % enable/disable RF model
-adc_levels = 7; % number of ADC output codes
+adc_levels = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]; % number of ADC output codes
 br = 100; % bit rate (bit/s)
 fc = 20.17e3; % carrier frequency (Hz)
 fs = 200e3; % sample frequency (Hz)
@@ -61,30 +61,37 @@ if use_rf
 
     % quantization
     signal_quantized = quantize(signal_agc, adc_levels);
-
+    
     % downmixing
     complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs);
 
 end
+[nbrows, nbcols] = size(complex_envelope_out);
+for i=1:nbcols
+    % GMSK demodulation
+    raw_out = gmsk_demodulate(complex_envelope_out(:,i), osr);
 
-% GMSK demodulation
-raw_out = gmsk_demodulate(complex_envelope_out, osr);
+    % clock recovery
+    clock_out = clock_recovery(raw_out, osr);
 
-% clock recovery
-clock_out = clock_recovery(raw_out, osr);
+    % extract bits
+    encoded_out = extract_bits(raw_out, clock_out, osr);
 
-% extract bits
-encoded_out = extract_bits(raw_out, clock_out, osr);
+    % FEC decoding (optional)
+    if use_fec
+        plain_out = fec_decode(encoded_out);
+    else
+        plain_out = encoded_out;
+    end
 
-% FEC decoding (optional)
-if use_fec
-    plain_out = fec_decode(encoded_out);
-else
-    plain_out = encoded_out;
+    % varicode decoding
+    message_out = varicode_decode(plain_out);
+
+    % ber
+    [number, ratio(:,i)] = biterr(encoded_in, encoded_out);
 end
-
-% varicode decoding
-message_out = varicode_decode(plain_out);
+figure('Name', 'BER vs ADC levels');
+plot(adc_levels, ratio);
 
 %% Plotting
 
