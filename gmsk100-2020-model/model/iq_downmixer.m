@@ -5,10 +5,12 @@ function complex_envelope = iq_downmixer(signal, osr, br, fc, fs)
 for k=1:nbcols
     % IQ downmixer
     t = ((1 : numel(signal(:,k)))' - 1) / fs;
-    upsampled_envelope = 2 * exp(-1j * 2 * pi * fc * t) .* signal(:,k);
+    [cos, sin] = cordic(2 * pi * fc *t,15)
+    upsampled_envelope_Q = cos .* signal(:,k);
+    upsampled_envelope_I = sin .* signal(:,k);
 
     % apply a simple downsampling filter
-    filt = ones(2 * round(fs / (br * osr)) + 1);
+    filt = ones(2 * round(fs / (br * osr)) + 1)     ;
     upsampled_envelope = conv(upsampled_envelope, filt / sum(filt), 'same');
 
     % calculate number of output samples
