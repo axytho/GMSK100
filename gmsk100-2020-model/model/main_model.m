@@ -11,7 +11,7 @@ osr = 64; % oversampling ratio
 
 % RF modeling parameters
 use_rf = true; % enable/disable RF model
-adc_levels = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]; % number of ADC output codes
+adc_levels = [2,4,8]; % number of ADC output codes
 br = 100; % bit rate (bit/s)
 fc = 20.17e3; % carrier frequency (Hz)
 fs = 200e3; % sample frequency (Hz)
