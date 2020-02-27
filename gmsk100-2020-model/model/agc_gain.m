@@ -1,8 +1,8 @@
 function out = agc_gain(in,fs)
 
 % TODO: Implement this yourself!
-
-out = 0.2 * in;
+maximum = max(abs(in));
+out = 2.5*(1/maximum) * in;
 % figure('Name', 'FFT');
 % plot(abs(fft(out)))
 

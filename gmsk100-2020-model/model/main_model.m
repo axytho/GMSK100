@@ -11,7 +11,7 @@ osr = 64; % oversampling ratio
 
 % RF modeling parameters
 use_rf = true; % enable/disable RF model
-adc_levels =  [2,4,8];% number of ADC output codes [2,4,8,16,2^5,2^6,2^7,2^8,2^9,2^10,2^11]
+adc_levels =  [2,4,8,16,2^5,2^6];% number of ADC output codes [2,4,8,16,2^5,2^6,2^7,2^8,2^9,2^10,2^11]
 br = 100; % bit rate (bit/s)
 fc = 20.17e3; % carrier frequency (Hz)
 fs = 200e3; % sample frequency (Hz)
@@ -64,14 +64,14 @@ if use_rf
 
 
     % quantization
-    signal_quantized = quantize(signal_agc, adc_levels, fs);
+    [signal_quantized, sample_rate] = quantize(signal_agc, adc_levels, fs);
     figure('Name', 'Quant');
     plot(signal_quantized(:,end));
     figure('Name', 'Quant_FFT');
     plot(abs(fft(signal_quantized(:,end))));
     
     % downmixing
-    complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs);
+    complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs, sample_rate);
 
 end
 [nbrows, nbcols] = size(complex_envelope_out);
