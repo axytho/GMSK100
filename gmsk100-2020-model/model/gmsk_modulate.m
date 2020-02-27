@@ -12,5 +12,4 @@ phase = [0; cumsum(data_filtered) * 0.5 * pi / osr];
 
 % generate complex envelope
 complex_envelope = exp(1j * phase);
-
 end
