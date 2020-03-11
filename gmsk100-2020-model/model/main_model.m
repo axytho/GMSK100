@@ -14,7 +14,7 @@ use_rf = true; % enable/disable RF model
 adc_levels = [2,4,8]; % number of ADC output codes
 br = 100; % bit rate (bit/s)
 fc = 20.17e3; % carrier frequency (Hz)
-fs = 200e3; % sample frequency (Hz)
+fs = 200e3; % sample frequency (Hz) (50 kHz is what is outputted by the analog)
 
 % plotting parameters
 plot_raw_data = true;
@@ -55,16 +55,20 @@ end
 %% Demodulation
 
 if use_rf
-
+    %+sin(1/10*2*3.1415*(1:length(signal_out)).'
+%     [psd, w] = pwelch(signal_out));
+%     plot(w/pi, psd);
     % automatic gain control
     signal_agc = agc_gain(signal_out);
 
     % quantization
     signal_quantized = quantize(signal_agc, adc_levels);
-    
+%     [psdSignal, w] = pwelch(signal_quantized);
+%      plot(w/pi, psdSignal);
     % downmixing
     complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs);
-
+    [psdSignal, w] = pwelch(complex_envelope_out);
+     plot(w/pi, psdSignal);
 end
 [nbrows, nbcols] = size(complex_envelope_out);
 for i=1:nbcols
@@ -85,34 +89,34 @@ for i=1:nbcols
     end
 
     % varicode decoding
-    message_out = varicode_decode(plain_out);
+    message_out = varicode_decode(plain_out)
 
     % ber
     [number, ratio(:,i)] = biterr(encoded_in, encoded_out);
 end
-figure('Name', 'BER vs ADC levels');
-plot(adc_levels, ratio);
+%figure('Name', 'BER vs ADC levels');
+%plot(adc_levels, ratio);
 
 %% Plotting
 
-raw_in = repelem(encoded_in * 2 - 1, osr, 1);
-
-if plot_raw_data
-    figure('Name', 'Raw data');
-    time_in = ((1 : numel(raw_in))' - 1) / osr;
-    time_out = ((1 : numel(raw_out))' - 1) / osr;
-    h = plot(time_in, raw_in, '-', ...
-             time_out, raw_out, '-', ...
-             clock_out, encoded_out * 2 - 1, 'sk');
-    set(h, {'MarkerFaceColor'}, get(h, 'Color'));
-    grid();
-end
-
-if plot_rf_signal && use_rf
-    figure('Name', 'RF signal');
-    time_in = ((1 : numel(signal_in))' - 1) / osr;
-    time_out = ((1 : numel(signal_out))' - 1) / osr;
-    plot(time_in, signal_in, '-', ...
-         time_out, signal_out, '-');
-    grid();
-end
+% raw_in = repelem(encoded_in * 2 - 1, osr, 1);
+% 
+% if plot_raw_data
+%     figure('Name', 'Raw data');
+%     time_in = ((1 : numel(raw_in))' - 1) / osr;
+%     time_out = ((1 : numel(raw_out))' - 1) / osr;
+%     h = plot(time_in, raw_in, '-', ...
+%              time_out, raw_out, '-', ...
+%              clock_out, encoded_out * 2 - 1, 'sk');
+%     set(h, {'MarkerFaceColor'}, get(h, 'Color'));
+%     grid();
+% end
+% 
+% if plot_rf_signal && use_rf
+%     figure('Name', 'RF signal');
+%     time_in = ((1 : numel(signal_in))' - 1) / osr;
+%     time_out = ((1 : numel(signal_out))' - 1) / osr;
+%     plot(time_in, signal_in, '-', ...
+%          time_out, signal_out, '-');
+%     grid();
+% end
