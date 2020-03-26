@@ -21,7 +21,7 @@ plot_raw_data = true;
 plot_rf_signal = true;
 
 % input message
-message_in = 'Hello';
+message_in = 'Hello World!';
 
 %% Modulation
 
@@ -84,28 +84,28 @@ else
 end
 
 % varicode decoding
-message_out = varicode_decode(plain_out);
+message_out = varicode_decode(plain_out)
 
 %% Plotting
-
+% 
 raw_in = repelem(encoded_in * 2 - 1, osr, 1);
 
-if plot_raw_data
-    figure('Name', 'Raw data');
-    time_in = ((1 : numel(raw_in))' - 1) / osr;
-    time_out = ((1 : numel(raw_out))' - 1) / osr;
-    h = plot(time_in, raw_in, '-', ...
-             time_out, raw_out, '-', ...
-             clock_out, encoded_out * 2 - 1, 'sk');
-    set(h, {'MarkerFaceColor'}, get(h, 'Color'));
-    grid();
-end
-
-if plot_rf_signal && use_rf
-    figure('Name', 'RF signal');
-    time_in = ((1 : numel(signal_in))' - 1) / osr;
-    time_out = ((1 : numel(signal_out))' - 1) / osr;
-    plot(time_in, signal_in, '-', ...
-         time_out, signal_out, '-');
-    grid();
-end
+% if plot_raw_data
+%     figure('Name', 'Raw data');
+%     time_in = ((1 : numel(raw_in))' - 1) / osr;
+%     time_out = ((1 : numel(raw_out))' - 1) / osr;
+%     h = plot(time_in, raw_in, '-', ...
+%              time_out, raw_out, '-', ...
+%              clock_out, encoded_out * 2 - 1, 'sk');
+%     set(h, {'MarkerFaceColor'}, get(h, 'Color'));
+%     grid();
+% end
+% 
+% if plot_rf_signal && use_rf
+%     figure('Name', 'RF signal');
+%     time_in = ((1 : numel(signal_in))' - 1) / osr;
+%     time_out = ((1 : numel(signal_out))' - 1) / osr;
+%     plot(time_in, signal_in, '-', ...
+%          time_out, signal_out, '-');
+%     grid();
+% end

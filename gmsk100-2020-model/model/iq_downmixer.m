@@ -2,6 +2,7 @@ function complex_envelope = iq_downmixer(signal, osr, br, fc, fs)
 
 % TODO: You may want to implement a better downsampling filter.
 [nbrows, nbcols] = size(signal);
+%plot(abs(fft((signal))));
 for k=1:nbcols
     % IQ downmixer
     t = ((1 : numel(signal(:,k)))' - 1) / fs;
@@ -31,16 +32,23 @@ for k=1:nbcols
     % impulse response should be the pulse shape.
     %plot shape:
     %plot(upsampled_envelope_Q)
+%     pulse = load("pulse.mat", "pulse");
+%     pulseTime = 1:3000000;
+%     bitRateTime = 1:(6 * round(fs / (br *     osr)) + 1);
+%     interpulse = interp1(pulseTime, pulse,  bitRateTime); %3 million + 1 values 
     
-    
+    t = (1:length(upsampled_envelope_Q)) * fs/length(upsampled_envelope_Q);
+    %plot(t, angle(upsampled_envelope_I - upsampled_envelope_Q * 1i));
+    %plot(t, abs(fft((upsampled_envelope_I - upsampled_envelope_Q * 1i))));
     filt = ones(2 * round(fs / (br *     osr)) + 1); 
     % elements in a pulse = time in a pulse / time in a pulse per element
     % = 1/br / 
-    upsampled_envelope_I = conv(upsampled_envelope_Q, filt / sum(filt), 'same');
-    upsampled_envelope_Q = conv(upsampled_envelope_I, filt/sum(filt), 'same');
+    upsampled_envelope_I = conv(upsampled_envelope_I, filt / sum(filt), 'same');
+    upsampled_envelope_Q = conv(upsampled_envelope_Q, filt/sum(filt), 'same');
     
-    upsampled_envelope = upsampled_envelope_I + upsampled_envelope_Q * 1i;
-
+    upsampled_envelope = upsampled_envelope_I - upsampled_envelope_Q * 1i;
+    %plot(t, abs(angle((upsampled_envelope_I - upsampled_envelope_Q * 1i))));
+    %plot(t, real(((upsampled_envelope_I - upsampled_envelope_Q * 1i))), t, imag(((upsampled_envelope_I - upsampled_envelope_Q * 1i))));
     % calculate number of output samples
     n1 = numel(upsampled_envelope);
     n2 = round((n1 - 1) * (br * osr) / fs) + 1;

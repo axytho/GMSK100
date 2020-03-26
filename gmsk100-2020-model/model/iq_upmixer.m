@@ -11,5 +11,4 @@ upsampled_envelope = interp1(t1, complex_envelope, t2);
 
 % IQ upmixer
 signal = real(exp(1j * 2 * pi * fc * t2) .* upsampled_envelope);
-
 end

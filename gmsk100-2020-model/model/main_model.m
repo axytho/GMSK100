@@ -6,27 +6,28 @@ close all
 % baseband modeling parameters
 use_fec = false; % enable/disable forward error correction
 bt = 0.5; % gaussian filter bandwidth
-snr = 15; % signal to noise ratio
-osr = 64; % oversampling ratio
+snr = 40; % signal to noise ratio
+osr = 64; % oversampling ratio used both in analog and digital
 
 % RF modeling parameters
 use_rf = true; % enable/disable RF model
-adc_levels = [2,4,8]; % number of ADC output codes
+adc_levels = 1024; % number of ADC output codes
 br = 100; % bit rate (bit/s)
 fc = 20.17e3; % carrier frequency (Hz)
-fs = 200e3; % sample frequency (Hz) (50 kHz is what is outputted by the analog)
+fs = 200e3; % sample frequency (Hz) % sample frequency (Hz) (50 kHz is what is outputted by the analog)
 
 % plotting parameters
 plot_raw_data = true;
 plot_rf_signal = true;
 
 % input message
-message_in = 'Hello';
+message_in = 'Hello World!';
 
 %% Modulation
 
 % varicode encoding
 plain_in = varicode_encode(message_in);
+%plain_in = [0, 1, 0].';
 
 % FEC encoding (optional)
 if use_fec
@@ -60,15 +61,30 @@ if use_rf
 %     plot(w/pi, psd);
     % automatic gain control
     signal_agc = agc_gain(signal_out);
-
+    perfect_signal_agc = agc_gain(signal_in);
     % quantization
     signal_quantized = quantize(signal_agc, adc_levels);
+    perfect_signal_quantized = quantize(perfect_signal_agc, adc_levels);
+    
+    
+%     noiseAnalog = sum(abs(signal_quantized - perfect_signal_quantized).^2);
+%     signal_quantizedIndB = 10*log10(sum(abs(perfect_signal_quantized).^2))
+%     noiseAnalogIndB = 10*log10(noiseAnalog)
+%     SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
 %     [psdSignal, w] = pwelch(signal_quantized);
 %      plot(w/pi, psdSignal);
     % downmixing
     complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs);
+    perfect_c_envelope_out = iq_downmixer(perfect_signal_quantized, osr, br, fc, fs);
+    
+    noiseAnalog = sum(abs(complex_envelope_out - perfect_c_envelope_out).^2);
+    signal_quantizedIndB = 10*log10(sum(abs(perfect_c_envelope_out).^2))
+    noiseAnalogIndB = 10*log10(noiseAnalog)
+    SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
+    
+    
     [psdSignal, w] = pwelch(complex_envelope_out);
-     plot(w/pi, psdSignal);
+     %plot(w/pi, psdSignal);
 end
 [nbrows, nbcols] = size(complex_envelope_out);
 for i=1:nbcols
