@@ -1,0 +1,7 @@
+Add axis
+Add simulation results
+Switch from matlab to VHDL
+
+Dit weekend:
+
+Thesis topics goed lezen.

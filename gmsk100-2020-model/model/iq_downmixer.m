@@ -32,15 +32,16 @@ for k=1:nbcols
     % impulse response should be the pulse shape.
     %plot shape:
     %plot(upsampled_envelope_Q)
-%     pulse = load("pulse.mat", "pulse");
-%     pulseTime = 1:3000000;
-%     bitRateTime = 1:(6 * round(fs / (br *     osr)) + 1);
-%     interpulse = interp1(pulseTime, pulse,  bitRateTime); %3 million + 1 values 
+     pulse = load("pulse.mat", "pulse");
+     pulseTime = (1:3000000-1)/3000000;
+     bitRateTime = 1:(6 * round(fs / (br *     osr)) + 1);% 3 bits:
+     %fs/osr*br amount of samples
+     filt = interp1(pulseTime, pulse,  bitRateTime); %3 million + 1 values 
     
-    t = (1:length(upsampled_envelope_Q)) * fs/length(upsampled_envelope_Q);
+    %t = (1:length(upsampled_envelope_Q)) * fs/length(upsampled_envelope_Q);
     %plot(t, angle(upsampled_envelope_I - upsampled_envelope_Q * 1i));
     %plot(t, abs(fft((upsampled_envelope_I - upsampled_envelope_Q * 1i))));
-    filt = ones(2 * round(fs / (br *     osr)) + 1); 
+    %filt = ones(2 * round(fs / (br *     osr)) + 1); 
     % elements in a pulse = time in a pulse / time in a pulse per element
     % = 1/br / 
     upsampled_envelope_I = conv(upsampled_envelope_I, filt / sum(filt), 'same');
