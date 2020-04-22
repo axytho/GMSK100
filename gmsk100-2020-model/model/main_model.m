@@ -6,7 +6,7 @@ close all
 % baseband modeling parameters
 use_fec = false; % enable/disable forward error correction
 bt = 0.5; % gaussian filter bandwidth
-snr = 40; % signal to noise ratio
+snr = 400; % signal to noise ratio
 osr = 64; % oversampling ratio used both in analog and digital
 
 % RF modeling parameters
@@ -74,13 +74,23 @@ if use_rf
 %     [psdSignal, w] = pwelch(signal_quantized);
 %      plot(w/pi, psdSignal);
     % downmixing
-    complex_envelope_out = iq_downmixer(signal_quantized, osr, br, fc, fs);
-    perfect_c_envelope_out = iq_downmixer(perfect_signal_quantized, osr, br, fc, fs);
-    
-    noiseAnalog = sum(abs(complex_envelope_out - perfect_c_envelope_out).^2);
-    signal_quantizedIndB = 10*log10(sum(abs(perfect_c_envelope_out).^2))
+    [complex_envelope_out, HANN] = iq_downmixer(signal_quantized, osr, br, fc, fs);
+    [perfect_c_envelope_out, perfectHANN] = iq_downmixer(perfect_signal_quantized, osr, br, fc, fs);
+    %complex_envelope_in
+    %plot(1:numel(complex_envelope_in), angle(complex_envelope_in), ... 
+    %1:numel(complex_envelope_in), angle(perfect_c_envelope_out), ...
+    %1:numel(complex_envelope_in), angle(perfectHANN) );
+    noiseAnalog = sum(abs(angle(complex_envelope_in) - angle(complex_envelope_out)).^2);
+    noiseAnalogHANN = sum(abs(angle(complex_envelope_in) - angle(HANN)).^2);
+    %signal_quantizedIndB = 10*log10(sum(abs(perfect_c_envelope_out).^2))
     noiseAnalogIndB = 10*log10(noiseAnalog)
-    SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
+    noiseHANNIndB = 10*log10(noiseAnalogHANN)
+    %SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
+    
+%     noiseAnalog = sum(abs(complex_envelope_out - perfect_c_envelope_out).^2);
+%     signal_quantizedIndB = 10*log10(sum(abs(perfect_c_envelope_out).^2))
+%     noiseAnalogIndB = 10*log10(noiseAnalog)
+%     SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
     
     
     [psdSignal, w] = pwelch(complex_envelope_out);
