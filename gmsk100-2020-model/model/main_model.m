@@ -96,10 +96,10 @@ if use_rf
     [psdSignal, w] = pwelch(complex_envelope_out);
      %plot(w/pi, psdSignal);
 end
-[nbrows, nbcols] = size(complex_envelope_out);
+[nbrows, nbcols] = size(HANN);
 for i=1:nbcols
     % GMSK demodulation
-    raw_out = gmsk_demodulate(complex_envelope_out(:,i), osr);
+    raw_out = gmsk_demodulate(HANN(:,i), osr);
 
     % clock recovery
     clock_out = clock_recovery(raw_out, osr);

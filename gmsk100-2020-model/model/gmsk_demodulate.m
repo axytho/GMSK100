@@ -4,11 +4,12 @@ function raw = gmsk_demodulate(complex_envelope, osr)
 % lots of things that can be improved!
 
 % apply a simple filter
-filt = ones(osr / 2 + 1);
-complex_envelope = conv(complex_envelope, filt / sum(filt), 'same');
+%filt = ones(osr / 2 + 1);
+%complex_envelope = conv(complex_envelope, filt / sum(filt), 'same');
 %plot(abs(fft((complex_envelope))));
 % extract phase
 phase = unwrap(angle(complex_envelope));
+%plot(phase)
 
 % calculate derivative
 raw = diff(phase) * osr / (0.5 * pi);
