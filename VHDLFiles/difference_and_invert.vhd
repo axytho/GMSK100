@@ -61,6 +61,8 @@ begin
 			  else
 					outputValue <= resize(difference, 8);
 			  end if;
+		  else
+		      doneFull <= '0';
 		  end if;
 	     
 	 end if;
