@@ -4,6 +4,7 @@ function [complex_envelope, complex_envelopeHANN] = iq_downmixer(signal, osr, br
 [nbrows, nbcols] = size(signal);
 %plot(abs(fft((signal))));
 for k=1:nbcols
+    generateTestbench2(signal,20000);
     % IQ downmixer
     t = ((1 : numel(signal(:,k)))' - 1) / fs;
     % Get the proper axis
