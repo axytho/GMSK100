@@ -24,8 +24,8 @@ USE ieee.std_logic_signed.ALL;
 
 ENTITY  booth_mul IS
 
-	GENERIC (x : INTEGER := 7;
-		      y : INTEGER := 7);
+	GENERIC (x : INTEGER := 8;
+		      y : INTEGER := 8);
 	
 	PORT(
 	     clk : in std_logic ;
