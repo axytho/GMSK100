@@ -25,5 +25,8 @@ integratedRect = max(integrated)/max(integratedRect)*integratedRect;
 pulse = sin(integrated*pi);
 pulseRect = sin(integratedRect*pi);
 plot(t, pulse, t, pulseRect);
+xlabel("Time (in 10 ms, per sample)");
+ylabel("Normalized amplitude");
+legend('GMSK Pulse', 'MSK pulse');
 %paper explaining GMSK filter with working formulas:
 % https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=704333
