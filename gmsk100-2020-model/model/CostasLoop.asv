@@ -1,6 +1,7 @@
-%function [output_I,output_Q, VCO] = CostasLoop(signal)
-t = (1:10000)/50000;
-signal = sin(2*pi*t*20200);
+function [output_I,output_Q, VCO] = CostasLoop(signal)
+% clear all;
+% t = (1:600)/50000;
+% signal = sin(2*pi*t*20500);
 %FILTER
 frequencies = [0, 0.04, 0.10, 0.20, 0.20, 1];
 magnitude = [1, 1, 0, 0, 0, 0];
@@ -8,9 +9,9 @@ weights = [1, 20, 10];
 b = firls(21, frequencies, magnitude, weights);
 filterLength = 22;
 % b= hann(filterLength);
-% b= b/sum(b);
+b= b/sum(b);
 Trad = numerictype(1,8,5); %This is for setting the type the numbers we use
-Frad = fimath('SumWordLength', 12, 'SumFractionLength', 9, 'SumMode', 'SpecifyPrecision');
+Frad = fimath('SumWordLength', 8, 'SumFractionLength', 5, 'SumMode', 'SpecifyPrecision');
 filterInBin = fi(b,'NumericType', Trad, 'FiMath', Frad);
 b = filterInBin.data.';
 %freqz(filterInBin.data, 1, 40000, 50000);
@@ -36,52 +37,57 @@ quadrature(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
 register_I = zeros(5, 1);
 register_Q = zeros(5, 1);
 
+%    [bNew, a] = butter(5,0.1);
+
 for i=1:n
  
    phase = phase + 2*pi*time*VCO(i);
    inphase(i) = signal(i) .* cos(phase);
    quadrature(i) = signal(i) .* sin(phase);
    
-   [b, a] = butter(6,0.2);
-   inputReg1 = inphase(i) - (a(2) * register_I(1) + a(3) * register_I(2) + a(4) * register_I(3)+ a(5) * register_I(4) + a(6) * register_I(5));
-   for j = 5:-1:2
-       register_I(j)  = register_I(j-1);
-   end
-   register_I(1) = inputReg1;
+
+%    inputReg_I = inphase(i) - (a(2) * register_I(1) + a(3) * register_I(2) + a(4) * register_I(3)+ a(5) * register_I(4) + a(6) * register_I(5));
+% 
+% 
+%    
+%    inputReg_Q = quadrature(i) - (a(2) * register_Q(1) + a(3) * register_Q(2) + a(4) * register_Q(3)+ a(5) * register_Q(4) + a(6) * register_Q(5));
+% 
+% 
+%    
+%    output_I(i) = sum(bNew.' .* [inputReg_I;register_I]);
+%    output_Q(i) = sum(bNew.' .* [inputReg_Q;register_Q]);
+%    
+%    
+%    for j = 5:-1:2
+%        register_I(j)  = register_I(j-1);
+%    end
+%    for j = 5:-1:2
+%        register_Q(j)  = register_Q(j-1);
+%    end
+%    register_I(1) = inputReg_I;
+%    register_Q(1) = inputReg_Q;
    
-   inputReg1 = inphase(i) - (a(2) * register_Q(1) + a(3) * register_Q(2) + a(4) * register_Q(3)+ a(5) * register_Q(4) + a(6) * register_Q(5));
-   for j = 5:-1:2
-       register_I(j)  = register_I(j-1);
-   end
-   register_I(1) = inputReg1;
    
    
-%    if i<filterLength
-%        output_I(i) = inphase(i);
-%        output_Q(i) = quadrature(i);
-%        
-%    else 
-%        output_I(i) = sum(inphase((i-filterLength+1):i).* b);
-%         output_Q(i) = sum(quadrature((i-filterLength+1):i).* b);
-%    end   
+   
+   if i<filterLength
+       output_I(i) = inphase(i);
+       output_Q(i) = quadrature(i);
+       
+   else 
+       output_I(i) = sum(inphase((i-filterLength+1):i).* b);
+        output_Q(i) = sum(quadrature((i-filterLength+1):i).* b);
+   end   
    
    product(i) = output_I(i) * output_Q(i);
-%    if i<filterLength
-%        filteredProduct(i) = product(i);
-%        
-%    else 
-%        filteredProduct(i) = sum(product((i-filterLength+1):i).* b);
-%    end      
-
-    filteredProduct(i) = product(i);
 
 
    if i==1
        integral(i) = 0;
-       PI_output = filteredProduct(i);
+       PI_output = product(i);
    else
-       integral(i) = integral(i-1) + 0.02 * filteredProduct(i);
-       PI_output = filteredProduct(i) + integral(i-1);
+       integral(i) = integral(i-1) + 0.01 * product(i);
+       PI_output = product(i) + integral(i-1);
    end
    %product can be filtered by the loop filter to remove stuff, not doing
    % it now
@@ -90,12 +96,15 @@ for i=1:n
    
    
    
-   %VCO(i+1) = 20000 + 1000*PI_output*8;
+   VCO(i+1) = 20000 + 5000*PI_output;
     
 end
-freqz(product(200:end),1 , 50000, 50000);
-%freqz(conv(inphase, b, 'same'),1 , 50000, 50000);
+%freqz(product(50:end),1 , 100000, 50000);
+%freqz(conv(inphase, b, 'same'),1 , 100000, 50000);
 %plot(VCO)
-%freqz(output_I,1 , 50000, 50000)
-%end
+filtered = conv(VCO,b,'same');
+downsampled = downsample( , 010
+plot(conv(VCO,b,'same'))
+%freqz(VCO,1 , 100000, 50000)
+end
 

@@ -158,7 +158,7 @@ for k=1:nbcols
 %     xlabel('Time in seconds')
 %     ylabel('Value of samples')
 %     hold off;
-%     
+    
     %plot(t, abs(fft((upsampled_envelope_I - upsampled_envelope_Q * 1i))));
     upsampled_envelope = upsampled_envelope_I - upsampled_envelope_Q * 1i;
     upsampled_envelopeHANN = upsampled_envelope_IHANN - upsampled_envelope_QHANN * 1i;

@@ -1,6 +1,7 @@
-%function [output_I,output_Q, VCO] = CostasLoop(signal)
-t = (1:200)/50000;
-signal = sin(2*pi*t*20170);
+function [output_I,output_Q, VCO] = CostasLoop(signal)
+% clear all;
+% t = (1:600)/50000;
+% signal = sin(2*pi*t*20500);
 %FILTER
 frequencies = [0, 0.04, 0.10, 0.20, 0.20, 1];
 magnitude = [1, 1, 0, 0, 0, 0];
@@ -8,7 +9,7 @@ weights = [1, 20, 10];
 b = firls(21, frequencies, magnitude, weights);
 filterLength = 22;
 % b= hann(filterLength);
-% b= b/sum(b);
+b= b/sum(b);
 Trad = numerictype(1,8,5); %This is for setting the type the numbers we use
 Frad = fimath('SumWordLength', 8, 'SumFractionLength', 5, 'SumMode', 'SpecifyPrecision');
 filterInBin = fi(b,'NumericType', Trad, 'FiMath', Frad);
@@ -28,13 +29,15 @@ integral = zeros(n, 1);
 VCO(1:end) = 20000;
 inphase(1) = signal(1) .* cos(2*pi*time*VCO(1)*1);
 inphase(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
-quadrature(1) = signal(1) .* cos(2*pi*time*VCO(1)*1);
-quadrature(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
+quadrature(1) = signal(1) .* sin(2*pi*time*VCO(1)*1);
+quadrature(2) = signal(2) .* sin(2*pi*time*VCO(2)*2);
 
  %50 KHz costas loop
 % Via for loop, no matlab specials because fc changes
 register_I = zeros(5, 1);
 register_Q = zeros(5, 1);
+
+%    [bNew, a] = butter(5,0.1);
 
 for i=1:n
  
@@ -42,7 +45,7 @@ for i=1:n
    inphase(i) = signal(i) .* cos(phase);
    quadrature(i) = signal(i) .* sin(phase);
    
-%    [bNew, a] = butter(5,0.1);
+
 %    inputReg_I = inphase(i) - (a(2) * register_I(1) + a(3) * register_I(2) + a(4) * register_I(3)+ a(5) * register_I(4) + a(6) * register_I(5));
 % 
 % 
@@ -81,10 +84,10 @@ for i=1:n
 
    if i==1
        integral(i) = 0;
-       PI_output = filteredProduct(i);
+       PI_output = product(i);
    else
-       integral(i) = integral(i-1) + 0 * filteredProduct(i);
-       PI_output = filteredProduct(i) + integral(i-1);
+       integral(i) = integral(i-1) + 0.01 * product(i);
+       PI_output = product(i) + integral(i-1);
    end
    %product can be filtered by the loop filter to remove stuff, not doing
    % it now
@@ -93,12 +96,26 @@ for i=1:n
    
    
    
-   VCO(i+1) = 20000 + 2000*PI_output;
+   VCO(i+1) = 20000 + 5000*PI_output;
     
 end
-%freqz(filteredProduct(6:end),1 , 50000, 50000);
-%freqz(conv(inphase, b, 'same'),1 , 50000, 50000);
-plot(VCO)
-%freqz(VCO,1 , 50000, 50000)
-%end
+%freqz(product(50:end),1 , 100000, 50000);
+%freqz(conv(inphase, b, 'same'),1 , 100000, 50000);
+%plot(VCO)
+
+%plot(conv(output_I,b,'same'))
+% [bNew, a] = butter(5,0.1);
+% filteredInPhase = filter(bNew, a, output_I);
+% %freqz(filteredInPhase(50:end),1 , 100000, 50000);
+% filteredInPhaseDown = downsample(filteredInPhase, 10);
+% twiceFiltered = filter(bNew, a, filteredInPhaseDown);
+%freqz(twiceFiltered(200:end),1 , 100000, 50000);
+%plot(twiceFiltered);
+%Working implementation:
+filtered = conv(VCO,b,'same');
+downsampled = downsample(filtered, 10);
+filteredDown = conv(downsampled,b,'same');
+plot(filteredDown);
+%freqz(VCO,1 , 100000, 50000)
+end
 
