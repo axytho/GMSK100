@@ -7,6 +7,7 @@ function [complex_envelope, complex_envelopeHANN] = iq_downmixer(signal, osr, br
 for k=1:nbcols
     %freqz(signal, 1, 50000, 200000);
     digitalSignal = downsample(signal, 4);
+    %plot(digitalSignal)
     [IStuff, QStuff, VCO] = CostasLoop(digitalSignal);
     %plot(VCO);
     generateTestbench2(digitalSignal,20000);

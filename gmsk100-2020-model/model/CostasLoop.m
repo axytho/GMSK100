@@ -38,6 +38,11 @@ register_I = zeros(5, 1);
 register_Q = zeros(5, 1);
 
 %    [bNew, a] = butter(5,0.1);
+phaseTest = 20170/25000.*(1:100).'*pi;
+solution = cos(phaseTest);
+phaseInput = acos(solution)./pi
+generateTestbench3(phaseInput, solution, 20000);
+
 
 for i=1:n
  

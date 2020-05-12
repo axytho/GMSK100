@@ -29,8 +29,8 @@ integral = zeros(n, 1);
 VCO(1:end) = 20000;
 inphase(1) = signal(1) .* cos(2*pi*time*VCO(1)*1);
 inphase(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
-quadrature(1) = signal(1) .* cos(2*pi*time*VCO(1)*1);
-quadrature(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
+quadrature(1) = signal(1) .* sin(2*pi*time*VCO(1)*1);
+quadrature(2) = signal(2) .* sin(2*pi*time*VCO(2)*2);
 
  %50 KHz costas loop
 % Via for loop, no matlab specials because fc changes
@@ -38,6 +38,10 @@ register_I = zeros(5, 1);
 register_Q = zeros(5, 1);
 
 %    [bNew, a] = butter(5,0.1);
+phaseTest = 20000/250000*(1:100);
+solution = cos(phaseTest);
+
+
 
 for i=1:n
  
@@ -102,9 +106,20 @@ end
 %freqz(product(50:end),1 , 100000, 50000);
 %freqz(conv(inphase, b, 'same'),1 , 100000, 50000);
 %plot(VCO)
+
+%plot(conv(output_I,b,'same'))
+% [bNew, a] = butter(5,0.1);
+% filteredInPhase = filter(bNew, a, output_I);
+% %freqz(filteredInPhase(50:end),1 , 100000, 50000);
+% filteredInPhaseDown = downsample(filteredInPhase, 10);
+% twiceFiltered = filter(bNew, a, filteredInPhaseDown);
+%freqz(twiceFiltered(200:end),1 , 100000, 50000);
+%plot(twiceFiltered);
+%Working implementation:
 filtered = conv(VCO,b,'same');
-downsampled = downsample( , 010
-plot(conv(VCO,b,'same'))
+downsampled = downsample(filtered, 10);
+filteredDown = conv(downsampled,b,'same');
+plot(filteredDown);
 %freqz(VCO,1 , 100000, 50000)
 end
 
