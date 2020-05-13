@@ -10,7 +10,7 @@ for k=1:nbcols
     %plot(digitalSignal)
     [IStuff, QStuff, VCO] = CostasLoop(digitalSignal);
     %plot(VCO);
-    generateTestbench2(digitalSignal,20000);
+    %generateTestbench2(digitalSignal,20000);
     % IQ downmixer
     t = ((1 : numel(signal(:,k)))' - 1) / fs;
     % Get the proper axis
