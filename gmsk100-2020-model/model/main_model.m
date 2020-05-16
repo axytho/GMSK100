@@ -6,15 +6,15 @@ close all
 % baseband modeling parameters
 use_fec = false; % enable/disable forward error correction
 bt = 0.5; % gaussian filter bandwidth
-snr = 400; % signal to noise ratio
+snr = 40; % signal to noise ratio
 osr = 64; % oversampling ratio used both in analog and digital
 
 % RF modeling parameters
 use_rf = true; % enable/disable RF model
-adc_levels = 1024; % number of ADC output codes
+adc_levels = 10; % number of ADC output codes
 br = 100; % bit rate (bit/s)
-fc = 20.17e3; % carrier frequency (Hz)
-fs = 200e3; % sample frequency (Hz) % sample frequency (Hz) (50 kHz is what is outputted by the analog)
+fc = 20.50e3; % carrier frequency (Hz)
+fs = 20000e3; % sample frequency (Hz) % sample frequency (Hz) (50 kHz is what is outputted by the analog)
 
 % plotting parameters
 plot_raw_data = true;
@@ -74,7 +74,8 @@ if use_rf
 %     [psdSignal, w] = pwelch(signal_quantized);
 %      plot(w/pi, psdSignal);
     % downmixing
-    [complex_envelope_out, HANN] = iq_downmixer(signal_quantized, osr, br, fc, fs);
+    iq_downmixer(signal_quantized, osr, br, fc, fs);
+   % [complex_envelope_out, HANN] = iq_downmixer(signal_quantized, osr, br, fc, fs);
     %[perfect_c_envelope_out, perfectHANN] = iq_downmixer(perfect_signal_quantized, osr, br, fc, fs);
     %complex_envelope_in
     %plot(1:numel(complex_envelope_in), angle(complex_envelope_in), ... 
@@ -93,33 +94,33 @@ if use_rf
 %     SNRAnalog = signal_quantizedIndB - noiseAnalogIndB
     
     
-    [psdSignal, w] = pwelch(complex_envelope_out);
-     %plot(w/pi, psdSignal);
-end
-[nbrows, nbcols] = size(HANN);
-for i=1:nbcols
-    % GMSK demodulation
-    raw_out = gmsk_demodulate(HANN(:,i), osr);
-
-    % clock recovery
-    clock_out = clock_recovery(raw_out, osr);
-
-    % extract bits
-    encoded_out = extract_bits(raw_out, clock_out, osr);
-
-    % FEC decoding (optional)
-    if use_fec
-        plain_out = fec_decode(encoded_out);
-    else
-        plain_out = encoded_out;
-    end
-
-    % varicode decoding
-    message_out = varicode_decode(plain_out)
-
-    % ber
-    [number, ratio(:,i)] = biterr(encoded_in, encoded_out);
-end
+%     [psdSignal, w] = pwelch(complex_envelope_out);
+%      %plot(w/pi, psdSignal);
+ end
+% [nbrows, nbcols] = size(HANN);
+% for i=1:nbcols
+%     % GMSK demodulation
+%     raw_out = gmsk_demodulate(HANN(:,i), osr);
+% 
+%     % clock recovery
+%     clock_out = clock_recovery(raw_out, osr);
+% 
+%     % extract bits
+%     encoded_out = extract_bits(raw_out, clock_out, osr);
+% 
+%     % FEC decoding (optional)
+%     if use_fec
+%         plain_out = fec_decode(encoded_out);
+%     else
+%         plain_out = encoded_out;
+%     end
+% 
+%     % varicode decoding
+%     message_out = varicode_decode(plain_out)
+% 
+%     % ber
+%     [number, ratio(:,i)] = biterr(encoded_in, encoded_out);
+% end
 %figure('Name', 'BER vs ADC levels');
 %plot(adc_levels, ratio);
 

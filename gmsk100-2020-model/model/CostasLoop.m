@@ -26,6 +26,7 @@ output_I = zeros(n, 1);
 output_Q = zeros(n, 1);
 product = zeros(n, 1);
 integral = zeros(n, 1);
+PI_output = zeros(n, 1);
 VCO(1:end) = 20000;
 inphase(1) = signal(1) .* cos(2*pi*time*VCO(1)*1);
 inphase(2) = signal(2) .* cos(2*pi*time*VCO(2)*2);
@@ -99,10 +100,10 @@ for i=1:n
 
    if i==1
        integral(i) = 0;
-       PI_output = product(i);
+       PI_output(i) = product(i);
    else
-       integral(i) = integral(i-1) + 0.01 * product(i);
-       PI_output = product(i) + integral(i-1);
+       integral(i) = integral(i-1) + 0.01625 * product(i);
+       PI_output(i) = product(i) + integral(i-1);
    end
    %product can be filtered by the loop filter to remove stuff, not doing
    % it now
@@ -111,12 +112,12 @@ for i=1:n
    
    
    
-   %VCO(i+1) = 20000 + 6250*PI_output;
+   VCO(i+1) = 20000 + 25000*PI_output(i);
     
 end
 %freqz(product(50:end),1 , 100000, 50000);
 %freqz(conv(inphase, b, 'same'),1 , 100000, 50000);
-%plot(VCO)
+%plot(signal)
 
 %plot(conv(output_I,b,'same'))
 % [bNew, a] = butter(5,0.1);
@@ -127,15 +128,16 @@ end
 %freqz(twiceFiltered(200:end),1 , 100000, 50000);
 %plot(twiceFiltered);
 %Working implementation:
-filtered = conv(VCO,b,'same');
+filtered = conv(PI_output,b,'same');
 downsampled = downsample(filtered, 10);
 filteredDown = conv(downsampled,b,'same');
-%plot(filteredDown);
-%freqz(VCO,1 , 100000, 50000)
+moreFilter = conv(filteredDown,b,'same');
+plot(moreFilter);
+%freqz(filteredDown,1 , 10000000, 50000)
 
 
-generateTestbench3(signal, output_I, 20000);
-
+%generateTestbench4(signal, filteredDown, 20000);
+%generateTestbench5(filteredDown, 200000);
 end
 
 

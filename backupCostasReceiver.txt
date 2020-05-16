@@ -1,0 +1,230 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    10:40:15 04/30/2020 
+-- Design Name: 
+-- Module Name:    top_counter - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+
+USE ieee.std_logic_1164.ALL;
+USE ieee.std_logic_unsigned.all;
+USE ieee.numeric_std.ALL;
+
+
+
+entity costas_gmsk_receiver is
+
+ Port (    
+			  clk : in std_logic ;
+			  input_signal : in signed(15 downto 0) ;
+			  newValue : in std_logic ;
+			  
+			--  clk20us : in std_logic;
+			  done : out std_logic;
+		     output_value :out std_logic;
+			  ascii_byte: out  std_logic_vector(6 downto 0));
+
+end costas_gmsk_receiver;
+
+
+architecture Behavioral of costas_gmsk_receiver is
+
+signal VCO : signed(15 downto 0) := to_signed(0, 16);
+signal VCOOpen : signed(15 downto 0) := to_signed(0, 16);
+signal phase : signed(15 downto 0) := to_signed(0, 16);
+signal sin : signed(15 downto 0) := to_signed(0, 16);
+signal cos : signed(15 downto 0) := to_signed(0, 16);
+signal inphase : signed(15 downto 0) := to_signed(0, 16);
+signal quadrature : signed(15 downto 0) := to_signed(0, 16);
+signal output_I : signed(15 downto 0) := to_signed(0, 16);
+signal output_Q : signed(15 downto 0) := to_signed(0, 16);
+signal product : signed(15 downto 0) := to_signed(0, 16);
+
+signal full_I : signed(31 downto 0) := to_signed(0, 32);
+signal full_Q : signed(31 downto 0) := to_signed(0, 32);
+signal full_Product : signed(31 downto 0) := to_signed(0, 32);
+
+signal VCO_50KHz : signed(15 downto 0) := to_signed(0, 16);
+signal VCO_5KHz : signed(15 downto 0) := to_signed(0, 16);
+signal VCO_5KHz_filtered : signed(15 downto 0) := to_signed(0, 16);
+
+signal start_phase: std_logic := '0';
+signal done_phase: std_logic := '0';
+signal start_VCO: std_logic := '0';
+signal done_VCO: std_logic := '0';
+signal start_filter: std_logic := '0';
+signal done_filter: std_logic := '0';
+signal start_loop_filter: std_logic := '0';
+signal done_loop_filter: std_logic := '0';
+
+signal start_VCO_filter_50KHz: std_logic := '0';
+signal done_VCO_filter_50KHz: std_logic := '0';
+signal start_downsample: std_logic := '0';
+signal done_downsample: std_logic := '0';
+signal start_VCO_filter_5KHz: std_logic := '0';
+signal done_VCO_filter_5KHz: std_logic := '0';
+
+signal done_diff: std_logic;
+signal done_symbol: std_logic;
+signal output_of_sync: std_logic;
+signal datain : signed (7 downto 0) ;
+
+--
+begin
+
+ 
+
+
+	rising_to_phase: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => newValue,
+								  rising_edge_signal => start_phase
+	                       );
+
+
+	TwentyKHzPhase: entity work.TwentyKHzPhase port map(
+	                       clk => clk,
+								  VCO => VCO,
+								  newValue => start_phase,
+								  phaseOut => phase,
+								  doneFull => done_phase
+	                       );
+								  
+	rising_to_VCO: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_phase,
+								  rising_edge_signal => start_VCO
+	                       );
+								  
+	VCOEntity: entity work.VCO port map(
+	                       clk => clk,
+								  phase_input => phase,
+								  newValue => start_VCO,
+								  sin_out => sin,
+								  cos_out => cos,
+								  done => done_VCO
+	                       );
+								  
+								  
+	full_I <= input_signal * cos;
+	full_Q <= input_signal * sin;
+	inphase <= resize(full_I(31 downto 15), 16);
+	quadrature <= resize(full_Q(31 downto 15), 16);
+	
+	rising_to_filter: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_VCO,
+								  rising_edge_signal => start_filter
+	                       );
+								  
+	 uut_I: entity work.low_pass_filter_22 PORT MAP (
+          clk => clk,
+          inputValue => inphase,
+          newValue => start_filter,
+          outputValue => output_I,
+          doneFull => done_filter
+        );
+		  
+	 uut_Q: entity work.low_pass_filter_22 PORT MAP (
+          clk => clk,
+          inputValue => quadrature,
+          newValue => start_filter,
+			 --doneFull => done_Q,
+          outputValue => output_Q
+        );
+		  
+	full_Product <= output_I * output_Q;
+	product <= resize(full_Product(31 downto 15), 16);
+	
+	rising_to_loop_filter: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_filter,
+								  rising_edge_signal => start_loop_filter
+	                       );
+ 		  
+	 loop_filter: entity work.loop_filter PORT MAP (
+          clk => clk,
+          product => product,
+          newValue => start_loop_filter,
+			 doneFull => done_loop_filter,
+          --VCO => VCO
+			 VCO => VCO
+        );  
+		  
+		  
+		rising_to_filter_50: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_loop_filter,
+								  rising_edge_signal => start_VCO_filter_50KHz
+	                       );
+		
+	 loop_filter_50: entity work.low_pass_filter_22 PORT MAP (
+          clk => clk,
+          inputValue => VCO,
+          newValue => start_VCO_filter_50KHz,
+			 doneFull => done_VCO_filter_50KHz,
+          outputValue => VCO_50KHz
+        );	
+
+		  
+	rising_to_downsample: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_VCO_filter_50KHz,
+								  rising_edge_signal => start_downsample
+	                       );		  
+		
+	downsample: entity work.downsample PORT MAP (
+          clk => clk,
+          inputValue => VCO_50KHz,
+          newValue => start_downsample,
+			 doneFull => done_downsample,
+          outputValue => VCO_5KHz
+        );	
+		  
+	rising_to_filter_5KHz: entity work.rising_edge_block port map(
+	                       clk => clk,
+								  signal_in => done_downsample,
+								  rising_edge_signal => start_VCO_filter_5KHz
+	                       );
+								  
+	 loop_filter_5: entity work.low_pass_filter_22 PORT MAP (
+          clk => clk,
+          inputValue => VCO_5KHz,
+          newValue => start_VCO_filter_5KHz,
+			 doneFull => done_VCO_filter_5KHz,
+          outputValue => VCO_5KHz_filtered
+        );	
+
+
+
+ 									
+	counterDataSync: entity work.counter PORT MAP(--
+	                        clk => clk ,
+									newValue => done_diff,
+									datainput => datain,
+									done_symbol => done_symbol,
+								   output_value => output_of_sync
+									);
+									
+   varicode: entity work.varicode_decoder PORT MAP (
+          clk => clk,
+          bitClock => done_symbol,
+          dataBit => output_of_sync,
+          asciiByte => ascii_byte,
+          done => done
+        );
+
+end Behavioral;
