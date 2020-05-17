@@ -13,7 +13,7 @@ osr = 64; % oversampling ratio used both in analog and digital
 use_rf = true; % enable/disable RF model
 adc_levels = 10; % number of ADC output codes
 br = 100; % bit rate (bit/s)
-fc = 20.50e3; % carrier frequency (Hz)
+fc = 20.10e3; % carrier frequency (Hz)
 fs = 20000e3; % sample frequency (Hz) % sample frequency (Hz) (50 kHz is what is outputted by the analog)
 
 % plotting parameters

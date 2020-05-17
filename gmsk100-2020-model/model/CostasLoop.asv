@@ -134,8 +134,7 @@ filteredDown = conv(downsampled,b,'same');
 moreFilter = conv(filteredDown,b,'same');
 t = (1:numel(VCO))/numel(VCO)*0.88;
 plot(t, VCO);
-xlabel("time in seconds");
-ylabel("frequency recovered");
+xlabel(time in sec
 %freqz(filteredDown,1 , 10000000, 50000)
 
 
