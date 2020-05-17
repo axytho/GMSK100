@@ -6,7 +6,7 @@ close all
 % baseband modeling parameters
 use_fec = false; % enable/disable forward error correction
 bt = 0.5; % gaussian filter bandwidth
-snr = 40; % signal to noise ratio
+snr = 30; % signal to noise ratio
 osr = 64; % oversampling ratio used both in analog and digital
 
 % RF modeling parameters
