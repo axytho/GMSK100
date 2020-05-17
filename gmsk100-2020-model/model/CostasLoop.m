@@ -132,10 +132,10 @@ filtered = conv(PI_output,b,'same');
 downsampled = downsample(filtered, 10);
 filteredDown = conv(downsampled,b,'same');
 moreFilter = conv(filteredDown,b,'same');
-t = (1:numel(VCO))/numel(VCO)*0.88;
-plot(t, VCO);
+t = (1:numel(filteredDown))/numel(filteredDown)*0.88;
+plot(t, filteredDown);
 xlabel("time in seconds");
-ylabel("frequency recovered");
+ylabel("Filtered VCO");
 %freqz(filteredDown,1 , 10000000, 50000)
 
 
